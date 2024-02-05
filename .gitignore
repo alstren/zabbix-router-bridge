@@ -11,6 +11,8 @@
 *.zip
 *.tar.gz
 *.rar
+*.gz
+*.sh
 
 hs_err_pid*
 replay_pid*
@@ -19,6 +21,8 @@ replay_pid*
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+deploy/
+keystore/
 target/
 .mtj.tmp/
 .idea

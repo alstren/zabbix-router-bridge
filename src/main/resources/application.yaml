@@ -1,1 +1,91 @@
+server:
+  port: ${SERVER_PORT}
+  http2.enabled: true
+  compression.enabled: true
+  shutdown: graceful
+  tomcat:
+    accesslog.enabled: false
+    connection-timeout: 40
+    resource.allow-caching: false
+    threads:
+      max: 300
+      min-spare: 20
+    keep-alive-timeout: 40
+    max-keep-alive-requests: 10
+  servlet.context-path: /api
+  ssl:
+    enabled: ${SERVER_SSL_ENABLE}
+    protocol: TLSv1.3
+    key-store-type: jks
+    key-store: ${SERVER_SSL_KEY_STORE_PATH}
+    key-store-password: ${SERVER_SSL_KEY_STORE_PASS}
+    key-alias: ${SERVER_SSL_KEY_ALIAS}
 
+spring:
+  boot.admin.client:
+    enabled: ${SPRING_BOOT_ADMIN_CLIENT_ENABLED}
+    url: ${SPRING_BOOT_ADMIN_CLIENT_URL}
+    username: ${SPRING_BOOT_ADMIN_CLIENT_USERNAME}
+    password: ${SPRING_BOOT_ADMIN_CLIENT_PASSWORD}
+  cloud.discovery.enabled: false
+  application.name: @project.name@
+  liquibase.change-log: classpath:db/changelog/changelog-master.yaml
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+  jpa:
+    open-in-view: false
+    show-sql: false
+    hibernate.ddl-auto: validate
+
+feign:
+  httpclient:
+    disable-ssl-validation: true
+    enabled: false
+  okhttp.enabled: true
+  metrics.enabled: true
+  client.config:
+    zabbix-api:
+      connect-timeout: 5000
+      read-timeout: 5000
+      follow-redirects: true
+
+logging:
+  file.name: ${LOGGING_FILE_NAME}
+  pattern.dateformat: YYYY-MM-dd HH:mm:ss
+  level:
+    ru.krsmon: ${LOGGING_LEVEL_RU_KRSMON}
+    org.apache.sshd: ERROR
+
+management:
+  info:
+    os.enabled: true
+    java.enabled: true
+    env.enabled: true
+  endpoints.web:
+    base-path: /metrics
+    exposure.include: info, health, prometheus, metrics, loggers, logfile, refresh, features
+  endpoint:
+    prometheus.enabled: true
+    health:
+      show-details: always
+      show-components: always
+
+info.application:
+  name: '@project.name@'
+  description: '@project.description@'
+  version: '@project.version@'
+
+external:
+  zabbix:
+    url: ${ZABBIX_URL}
+    token: ${ZABBIX_TOKEN}
+  bots:
+    bridgeNotifyBot:
+      botUsername: ${BRIDGE_NOTIFICATION_BOT_USERNAME}
+      botToken: ${BRIDGE_NOTIFICATION_BOT_TOKEN}
