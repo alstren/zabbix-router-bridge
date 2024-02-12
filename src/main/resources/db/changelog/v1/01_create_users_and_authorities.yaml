@@ -1,0 +1,116 @@
+databaseChangeLog:
+  - changeSet:
+      id: v1_create_users_and_authorities
+      author: Vitaliy Andreev
+      changes:
+        - createTable:
+            tableName: authorities
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    unique: true
+              - column:
+                  name: version
+                  type: int
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: authority
+                  type: varchar(30)
+                  constraints:
+                    nullable: false
+                    unique: true
+        - createTable:
+            tableName: users
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    unique: true
+              - column:
+                  name: version
+                  type: int
+              - column:
+                  name: created
+                  type: timestamp
+              - column:
+                  name: updated
+                  type: timestamp
+              - column:
+                  name: username
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+                    referencedTableName: users_authorities
+                    foreignKeyName: authorities_authority
+              - column:
+                  name: password
+                  type: varchar(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: telegram_id
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: enabled
+                  type: boolean
+                  constraints:
+                    nullable: false
+        - createIndex:
+            indexName: idx_user_name
+            tableName: users
+            unique: true
+            columns:
+              - column:
+                  name: username
+        - createIndex:
+            indexName: idx_user_telegram_id
+            tableName: users
+            unique: true
+            columns:
+              - column:
+                  name: telegram_id
+        - createTable:
+            tableName: users_authorities
+            columns:
+              - column:
+                  name: users_username
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    unique: true
+              - column:
+                  name: authorities_authority
+                  type: int
+                  constraints:
+                    nullable: true
+        - sql:
+            endDelimiter: ;
+            sql:
+              ALTER TABLE public.users_authorities ADD CONSTRAINT fk_on_authority FOREIGN KEY (authorities_authority) REFERENCES authorities (id);
+              ALTER TABLE public.users_authorities ADD CONSTRAINT fk_on_user FOREIGN KEY (users_username) REFERENCES users (id);
+              INSERT INTO public.authorities VALUES
+              (1, 0, now(), now(), 'ROLE_ROOT'),
+              (2, 0, now(), now(), 'ROLE_ZABBIX');
+              INSERT INTO public.users VALUES
+              (1, 0, now(), now(), 'admin', '$2a$08$r6M8Z5SIGaxsxGQxHjNpFeXcOzLmlkIJ8MDA7YTSmffGhj9ubYSfi', '0', true),
+              (2, 0, now(), now(), 'zabbix', '$2a$08$b4ItPBGlb23V6FaBDTt8.OlyhUtBTgb0UfkuVmkkA7rDbM1rzQqBW', '1', true);
+              INSERT INTO public.users_authorities VALUES (1,1), (2,2);
