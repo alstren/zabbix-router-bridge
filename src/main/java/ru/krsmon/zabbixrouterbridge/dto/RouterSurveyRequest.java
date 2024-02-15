@@ -44,7 +44,7 @@ public class RouterSurveyRequest {
   @Range(min = 1, max = 65535, message = "The HTTP port of router must be from 1 to 65535.")
   private int http;
 
-  @Range(min = 1, max = 65535, message = "The SERVICE port of router must be from 1 to 65535.")
+  @Range(min = 0, max = 65535, message = "The SERVICE port of router must be from 0 to 65535.")
   private int service;
 
   @Valid

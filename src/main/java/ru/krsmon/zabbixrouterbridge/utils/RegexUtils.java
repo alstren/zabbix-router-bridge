@@ -12,8 +12,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import lombok.experimental.UtilityClass;
 import org.springframework.lang.NonNull;
-import ru.krsmon.zabbixrouterbridge.dto.DeviceDto;
-import ru.krsmon.zabbixrouterbridge.dto.Policy;
 
 @UtilityClass
 public class RegexUtils {
@@ -22,10 +20,6 @@ public class RegexUtils {
   private static final Pattern PACKET_LOSS = Pattern.compile("[\\s|=]?(\\d{1,3})%");
   private static final String PATTERN_REPLACE = "[^0-9]";
   private static final String IP_PREFIX = "192.168";
-
-  public static boolean filterNonDefaultDevice(@NonNull DeviceDto device) {
-    return !DEFAULT_MAC.equalsIgnoreCase(device.getMac());
-  }
 
   public static Map<String, String> toArpMap(@NonNull String log) {
     return Arrays.stream(log.split(LINE_SEPARATOR))
@@ -53,17 +47,9 @@ public class RegexUtils {
           return Map.entry(loss != 100, "packet loss %s%s".formatted(loss, "%"));
         }
       }
-      return Map.entry(false, "unknown packet loss");
+      return Map.entry(false, "fail: response not recognized");
     } catch (Exception exception) {
-      return Map.entry(false, "fail ping: message '%s'".formatted(exception.getLocalizedMessage()));
-    }
-  }
-
-  public static boolean isOnline(boolean isPingSuccess, boolean isPortsOpened, @NonNull Policy policy) {
-    switch (policy) {
-      case PING_AND_PORTS -> { return isPingSuccess && isPortsOpened; }
-      case PING_OR_PORTS -> { return isPingSuccess || isPortsOpened; }
-      default -> { return  isPingSuccess; }
+      return Map.entry(false, "fail: message '%s'".formatted(exception.getLocalizedMessage()));
     }
   }
 

@@ -23,10 +23,11 @@ import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 @Component("SSH")
 public class ClientSshImpl implements Client {
   private final SshClient client = SshClient.setUpDefaultClient();
-  private ClientSession session;
 
   @Value("${server.tomcat.connection-timeout}")
-  protected Integer timeout;
+  private Integer timeout;
+
+  private ClientSession session;
 
   @Override
   public boolean connect(@NonNull ClientCfg cfg) {

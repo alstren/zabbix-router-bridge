@@ -1,34 +1,33 @@
 package ru.krsmon.zabbixrouterbridge.dto;
 
+import lombok.Builder;
 import lombok.Getter;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 @Getter
+@Builder
 public class DeviceStatus {
   private final int code;
-  private final String status;
   private final String message;
+  private final boolean hasError;
 
-  public DeviceStatus(@NonNull Status status, @Nullable String message) {
-    this.code = status.getCode();
-    this.status = status.getStatus();
+  public DeviceStatus(int statusCode, @NonNull String message, boolean hasError) {
+    this.code = statusCode;
     this.message = message;
+    this.hasError = hasError;
   }
 
   @Getter
   public enum Status {
-    ONLINE(1, "Online"),
-    OFFLINE(2,"Offline"),
-    NAN(3, "Not verified"),
-    ERROR(4, "Validation error");
+    ONLINE(1),  // Device online
+    OFFLINE(2), // Device offline
+    NAN(3),     // Service general error
+    ERROR(4);   // Ping error, ports not declared
 
     private final int code;
-    private final String status;
 
-    Status(int code, String status) {
+    Status(int code) {
       this.code = code;
-      this.status = status;
     }
   }
 }

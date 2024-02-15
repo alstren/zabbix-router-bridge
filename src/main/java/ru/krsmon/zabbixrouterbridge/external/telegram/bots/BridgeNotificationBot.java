@@ -37,6 +37,27 @@ public class BridgeNotificationBot extends TelegramLongPollingBot {
     }
   }
 
+  @SneakyThrows
+  public void notifyAdmin(@NonNull String text) {
+    log.info("BRIDGE: Inform admins, message '%s'".formatted(text));
+    for (var id : userService.findAll().stream().filter(this::isAdmin).map(User::getTelegramId).toList()) {
+      var message = new SendMessage();
+      message.setChatId(id);
+      message.setText(text);
+      executeAsync(message);
+    }
+  }
+
+  @Override
+  public String getBotUsername() {
+    return botUsername;
+  }
+
+  @Override
+  public String getBotToken() {
+    return botToken;
+  }
+
   private boolean validateUser(Message message) {
     log.info("BRIDGE: received message '%s' from '%s'.".formatted(message.getText(), message.getFrom().getId()));
     if (message.getFrom().getIsBot()) return false;
@@ -62,27 +83,6 @@ public class BridgeNotificationBot extends TelegramLongPollingBot {
   private boolean isAdmin(User user) {
     return user.getAuthorities().stream()
         .anyMatch(authority -> authority.getAuthority().equalsIgnoreCase(ROLE_ROOT));
-  }
-
-  @SneakyThrows
-  public void notifyAdmin(@NonNull String text) {
-    log.info("BRIDGE: Inform admins, message '%s'".formatted(text));
-    for (var id : userService.findAll().stream().filter(this::isAdmin).map(User::getTelegramId).toList()) {
-      var message = new SendMessage();
-      message.setChatId(id);
-      message.setText(text);
-      executeAsync(message);
-    }
-  }
-
-  @Override
-  public String getBotUsername() {
-    return botUsername;
-  }
-
-  @Override
-  public String getBotToken() {
-    return botToken;
   }
 
 }
