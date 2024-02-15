@@ -32,11 +32,12 @@ import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 public class ClientTelnetImpl implements Client {
   private final TelnetClient client = new TelnetClient();
   private final StringBuilder routerLog = new StringBuilder();
-  private Expect expect;
-  private String invite;
 
   @Value("${server.tomcat.connection-timeout}")
-  protected Integer timeout;
+  private Integer timeout;
+
+  private Expect expect;
+  private String invite;
 
   @Override
   public boolean connect(@NonNull ClientCfg cfg) {

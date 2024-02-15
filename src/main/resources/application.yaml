@@ -29,6 +29,7 @@ spring:
     password: ${SPRING_BOOT_ADMIN_CLIENT_PASSWORD}
   cloud.discovery.enabled: false
   application.name: @project.name@
+  lifecycle.timeout-per-shutdown-phase: 10s
   liquibase.change-log: classpath:db/changelog/changelog-master.yaml
   datasource:
     driver-class-name: org.postgresql.Driver
