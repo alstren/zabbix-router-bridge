@@ -12,7 +12,7 @@
 
 	<groupId>ru.krsmon</groupId>
 	<artifactId>zabbix-router-bridge</artifactId>
-	<version>1.0.4</version>
+	<version>1.0.5</version>
 	<name>Router bridge for zabbix</name>
 	<description>Router bridge for zabbix</description>
 
@@ -27,7 +27,6 @@
 		<spring-boot-admin.version>2.7.15</spring-boot-admin.version>
 		<mapstruct.version>1.5.5.Final</mapstruct.version>
 		<telegrambots.version>6.9.7.0</telegrambots.version>
-		<jsch.version>0.2.16</jsch.version>
 	</properties>
 
 	<dependencyManagement>
@@ -96,13 +95,6 @@
 			<groupId>commons-net</groupId>
 			<artifactId>commons-net</artifactId>
 			<version>${commons-net.version}</version>
-		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/com.github.mwiede/jsch -->
-		<dependency>
-			<groupId>com.github.mwiede</groupId>
-			<artifactId>jsch</artifactId>
-			<version>${jsch.version}</version>
 		</dependency>
 
 		<!-- https://mvnrepository.com/artifact/net.sf.expectit/expectit-core -->
