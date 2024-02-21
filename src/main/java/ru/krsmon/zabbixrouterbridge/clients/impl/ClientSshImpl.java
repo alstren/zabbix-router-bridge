@@ -12,7 +12,7 @@ import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.session.ClientSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.web.context.annotation.RequestScope;
 import ru.krsmon.zabbixrouterbridge.clients.Client;
 import ru.krsmon.zabbixrouterbridge.clients.config.ClientCfg;
@@ -20,7 +20,7 @@ import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 
 @Slf4j
 @RequestScope
-@Component("SSH")
+@Service("SSH")
 public class ClientSshImpl implements Client {
   private final SshClient client = SshClient.setUpDefaultClient();
 
