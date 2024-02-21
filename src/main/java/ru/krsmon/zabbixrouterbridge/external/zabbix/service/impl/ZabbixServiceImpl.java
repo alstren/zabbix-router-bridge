@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import ru.krsmon.zabbixrouterbridge.external.zabbix.api.ZabbixApi;
 import ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixRequest;
@@ -71,7 +73,9 @@ public class ZabbixServiceImpl implements ZabbixService {
     return id;
   }
 
+  @Async
   @Override
+  @SneakyThrows
   public void updateMacros(int hostId, @NonNull Map<String, String> macros) {
     var hostMacros = (List<Map<String, String>>) getHostMacros(hostId, macros).get(RESULT);
     var macros2Update = new ArrayList<Map<String, String>>();
