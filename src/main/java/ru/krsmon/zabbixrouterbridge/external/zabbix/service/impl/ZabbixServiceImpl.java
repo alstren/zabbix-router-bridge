@@ -3,19 +3,25 @@ package ru.krsmon.zabbixrouterbridge.external.zabbix.service.impl;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 import static org.springframework.http.HttpStatus.OK;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.CONFIGURATION_EXPORT;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.DATA;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.ERROR;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.EXTEND;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.FILTER;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.GROUPID;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.HOSTGROUP_GET;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.HOSTID;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.HOSTIDS;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.HOSTMACROID;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.HOSTS;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.HOST_GET;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.MACRO;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.MESSAGE;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.NAME;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.OPTIONS;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.OUTPUT;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.RESULT;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.SELECT_HOSTS;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.USERMACRO_CREATE;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.USERMACRO_GET;
 import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.USERMACRO_UPDATE;
@@ -25,12 +31,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 import ru.krsmon.zabbixrouterbridge.external.zabbix.api.ZabbixApi;
 import ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixRequest;
 import ru.krsmon.zabbixrouterbridge.external.zabbix.service.ZabbixService;
@@ -71,9 +81,11 @@ public class ZabbixServiceImpl implements ZabbixService {
     return id;
   }
 
+  @Async
   @Override
+  @SneakyThrows
   public void updateMacros(int hostId, @NonNull Map<String, String> macros) {
-    var hostMacros = (List<Map<String, String>>) getHostMacros(hostId, macros).get(RESULT);
+    var hostMacros = (List<Map<String, String>>) getHostMacros(hostId).get(RESULT);
     var macros2Update = new ArrayList<Map<String, String>>();
     var macros2Create = new ArrayList<Map<String, String>>();
 
@@ -127,7 +139,34 @@ public class ZabbixServiceImpl implements ZabbixService {
     }
   }
 
-  protected Map<String, Object> getHostMacros(int hostId, @NonNull Map<String, String> macros) {
+  @Override
+  public String exportHosts(@NonNull List<String> groups) throws BridgeException {
+    log.info("ZABBIX: Export hosts from groups '%s' to file".formatted(groups));
+    var requestHostIds = new ArrayList<String>();
+    try {
+      getHostIdsByGroupNames(groups).ifPresent(requestHostIds::addAll);
+
+      var request = ZabbixRequest.builder()
+          .method(CONFIGURATION_EXPORT)
+          .auth(apiToken)
+          .params(Map.of(
+              OPTIONS, Map.of(HOSTS, requestHostIds),
+              "format", "xml"
+          ))
+          .build();
+
+      var response = validateResponse(api.request(request));
+      log.info("ZABBIX: Successfully exported hosts from groups '%s'".formatted(groups));
+      return (String) response.get(RESULT);
+    } catch (Exception ex) {
+      log.warn("ZABBIX: Fail export hosts by groups '%s', message: '%s'"
+          .formatted(groups, ex.getLocalizedMessage()));
+      return null;
+    }
+  }
+
+  @Override
+  public Map<String, Object> getHostMacros(int hostId) {
     try {
       log.info("ZABBIX: Get host macros by hostId '%s'...".formatted(hostId));
       var request = ZabbixRequest.builder()
@@ -145,6 +184,37 @@ public class ZabbixServiceImpl implements ZabbixService {
       log.warn("ZABBIX: Fail getting host macros, message: '%s'".formatted(exception.getLocalizedMessage()));
       return Map.of();
     }
+  }
+
+  @NonNull
+  @Override
+  public Optional<List<String>> getHostIdsByGroupNames(@NonNull List<String> groupNames) {
+    try {
+      log.info("ZABBIX: Get group and host ids by names...");
+      var request = ZabbixRequest.builder()
+          .method(HOSTGROUP_GET)
+          .auth(apiToken)
+          .params(Map.of(
+              OUTPUT, GROUPID,
+              SELECT_HOSTS, HOSTID,
+              FILTER, Map.of(NAME, groupNames)
+          )).build();
+
+      var response = validateResponse(api.request(request));
+      log.info("ZABBIX: Successfully getting group ids by names.");
+      return Optional.of(((List<Map<String, Object>>) response.get(RESULT)).stream()
+          .flatMap(this::toHostIds)
+          .toList());
+    } catch (Exception ex) {
+      log.warn("ZABBIX: Fail to getting group ids by names '%s', message '%s'"
+          .formatted(groupNames, ex.getLocalizedMessage()));
+      return Optional.empty();
+    }
+  }
+
+  private Stream<String> toHostIds(Map<String, Object> groups) {
+    return ((List<Map<String, String>>) groups.get(HOSTS)).stream()
+        .flatMap(hosts -> hosts.values().stream());
   }
 
   private Map<String, Object> validateResponse(ResponseEntity<Map<String, Object>> response) {
