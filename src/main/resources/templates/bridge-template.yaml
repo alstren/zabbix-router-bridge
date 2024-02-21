@@ -1,0 +1,1028 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-02-21T16:41:05Z'
+  groups:
+    - uuid: 80a80dd44696421e9ad230467b0cd04f
+      name: 'Bridge service'
+  templates:
+    - uuid: 2714ea12838a470fbb3157c36d9cae5b
+      template: Bridge-server
+      name: 'Сервер моста'
+      groups:
+        - name: 'Bridge service'
+      items:
+        - uuid: 6578a278cb8b476fa3e6be26c5da9675
+          name: 'Used memory'
+          key: bridgemem
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: Mb
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - 'Memory: (.+)M'
+                - \1
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+        - uuid: 49ed1ee8d6364e49aed514a1acce2377
+          name: 'Bridge service status'
+          key: bridgestatus
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Service status'
+          preprocessing:
+            - type: REGEX
+              parameters:
+                - 'Active:\s(\w+)\s'
+                - \1
+              error_handler: CUSTOM_VALUE
+              error_handler_params: inactive
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="active" ? 1 : value=="inactive" ? 0 : 3'
+          triggers:
+            - uuid: 9fe9f33f289b4453a4968ab07e7765eb
+              expression: last(/Bridge-server/bridgestatus)<>1
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/Bridge-server/bridgestatus)=1
+              name: 'Сервис моста не запущен'
+              priority: DISASTER
+        - uuid: a8c4f6df1a7c4f11a8f98c199c946d1f
+          name: 'GC overhead percent'
+          type: DEPENDENT
+          key: gc_overhead_percent
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - jvm_gc_overhead_percent
+                - value
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: metrics.prometheus
+        - uuid: 3cdf2a090cc74b19ba72f2e01cc3c6ca
+          name: 'area="nonheap",id="CodeHeap ''non-nmethods''"'
+          type: DEPENDENT
+          key: jvm_memory_used_CodeHeap_non-nmethods
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="nonheap",id="CodeHeap ''non-nmethods''",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: a228be2316654af6b33d1ecef88a003b
+          name: 'area="nonheap",id="CodeHeap ''non-profiled nmethods''"'
+          type: DEPENDENT
+          key: jvm_memory_used_CodeHeap_non-profiled_nmethods
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="nonheap",id="CodeHeap ''non-profiled nmethods''",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: caa37c91c304425faae3c808eee88776
+          name: 'area="nonheap",id="Compressed Class Space"'
+          type: DEPENDENT
+          key: jvm_memory_used_Compressed_Class_Space
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="nonheap",id="Compressed Class Space",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 5a7f84eb5c0247edb77a8018e183ae53
+          name: 'area="heap",id="G1 Eden Space"'
+          type: DEPENDENT
+          key: jvm_memory_used_G1_Eden_Space
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="heap",id="G1 Eden Space",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 0053ae72587e4d5a9d6833258db0049a
+          name: 'area="nonheap",id="Metaspace"'
+          type: DEPENDENT
+          key: jvm_memory_used_Metaspace
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="nonheap",id="Metaspace",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 945f53ade47341a484159b6a7067192a
+          name: 'Threads blocked'
+          type: DEPENDENT
+          key: jvm_threads_states_threads_blocked
+          delay: '0'
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_threads_states_threads{state="blocked",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+          triggers:
+            - uuid: 75fd77e6ce8d44fe998e0e16e209ef20
+              expression: last(/Bridge-server/jvm_threads_states_threads_blocked)<>0
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/Bridge-server/jvm_threads_states_threads_blocked)=0
+              name: 'Обнаружены заблокированные потоки'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Сервис моста не запущен'
+                  expression: last(/Bridge-server/bridgestatus)<>1
+                  recovery_expression: last(/Bridge-server/bridgestatus)=1
+        - uuid: 191dce78e6fb4bea829a0216392eedd5
+          name: 'Threads new'
+          type: DEPENDENT
+          key: jvm_threads_states_threads_new
+          delay: '0'
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_threads_states_threads{state="new",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 8b0b4d7e1c744e97a56098ce9782a1ec
+          name: 'Threads runnable'
+          type: DEPENDENT
+          key: jvm_threads_states_threads_runnable
+          delay: '0'
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_threads_states_threads{state="runnable",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: d3721c84794641f6977e2bed13b69de7
+          name: 'Threads terminated'
+          type: DEPENDENT
+          key: jvm_threads_states_threads_terminated
+          delay: '0'
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_threads_states_threads{state="terminated",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 276a00c57d234b96ae5fd7eab9d23826
+          name: 'Threads time-waiting'
+          type: DEPENDENT
+          key: jvm_threads_states_threads_timed-waiting
+          delay: '0'
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_threads_states_threads{state="timed-waiting",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 30fed2692b544f8d921a65b47f004c1e
+          name: 'Threads waiting'
+          type: DEPENDENT
+          key: jvm_threads_states_threads_waiting
+          delay: '0'
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_threads_states_threads{state="waiting",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 2dfbad949e43495398a141cb4f895d6d
+          name: 'Logback DEBUG'
+          type: DEPENDENT
+          key: logback_events_total_debug
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'logback_events_total{level="debug",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 5d91fe8f7fab4a13b920c23c8823f7f9
+          name: 'Logback ERROR'
+          type: DEPENDENT
+          key: logback_events_total_error
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'logback_events_total{level="error",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: f9b7fc4f6a854b5187e848e0596f1ef6
+          name: 'Logback INFO'
+          type: DEPENDENT
+          key: logback_events_total_info
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'logback_events_total{level="info",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 92841abf8a6d45a79612b873f5657218
+          name: 'Logback WARN'
+          type: DEPENDENT
+          key: logback_events_total_warn
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'logback_events_total{level="warn",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: aeb322f2ab134a00b7118486ae35d4bf
+          name: 'area="nonheap",id="CodeHeap ''profiled nmethods''"'
+          type: DEPENDENT
+          key: memory_used_CodeHeap_profiled_nmethods
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="nonheap",id="CodeHeap ''profiled nmethods''",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: 401e74438b8048fd9d9171807cd84072
+          name: 'area="heap",id="G1 Old Gen"'
+          type: DEPENDENT
+          key: memory_used_G1_Old_Gen
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="heap",id="G1 Old Gen",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: d92e63a4901a4fdebf90f7385d84bdbb
+          name: 'area="heap",id="G1 Survivor Space"'
+          type: DEPENDENT
+          key: memory_used_G1_Survivor_Space
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: bytes
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - 'jvm_memory_used_bytes{area="heap",id="G1 Survivor Space",}'
+                - value
+                - ''
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.prometheus
+        - uuid: fc8a38cd523e45e4a0a1d2eacd36b7ee
+          name: Health
+          type: HTTP_AGENT
+          key: metrics.health
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          url: 'http://localhost:9339/api/metrics/health'
+        - uuid: 2481f5a011bf42a994ae8e74a90a60e7
+          name: 'TelegramBots status'
+          type: DEPENDENT
+          key: metrics.health.bots
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Bridge state'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.components.botsManager.status
+              error_handler: CUSTOM_VALUE
+              error_handler_params: UNKNOWN
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="UP" ? 1 : value=="DOWN" ? 0 : value=="OUT_OF_SERVICE" ? 2 : 3'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.health
+          triggers:
+            - uuid: 61c75d18fc1444d79aa5d36e201b783b
+              expression: last(/Bridge-server/metrics.health.bots)<>1
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/Bridge-server/metrics.health.bots)=1
+              name: 'Ошибка в работе бота(ов)'
+              priority: HIGH
+              dependencies:
+                - name: 'Сервис моста не запущен'
+                  expression: last(/Bridge-server/bridgestatus)<>1
+                  recovery_expression: last(/Bridge-server/bridgestatus)=1
+        - uuid: b0484b44524e40299b69c452642b61cc
+          name: 'Database status'
+          type: DEPENDENT
+          key: metrics.health.database
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Bridge state'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.components.db.status
+              error_handler: CUSTOM_VALUE
+              error_handler_params: UNKNOWN
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="UP" ? 1 : value=="DOWN" ? 0 : value=="OUT_OF_SERVICE" ? 2 : 3'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.health
+          triggers:
+            - uuid: af290463b2234b55892da065c2b2c2ed
+              expression: last(/Bridge-server/metrics.health.database)<>1
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/Bridge-server/metrics.health.database)=1
+              name: 'Ошибка соединения с базой данных'
+              priority: HIGH
+              dependencies:
+                - name: 'Сервис моста не запущен'
+                  expression: last(/Bridge-server/bridgestatus)<>1
+                  recovery_expression: last(/Bridge-server/bridgestatus)=1
+        - uuid: dcf846820d974c2aad09111b990b5c46
+          name: 'Diskspace status'
+          type: DEPENDENT
+          key: metrics.health.diskspace
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Bridge state'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.components.diskSpace.status
+              error_handler: CUSTOM_VALUE
+              error_handler_params: UNKNOWN
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="UP" ? 1 : value=="DOWN" ? 0 : value=="OUT_OF_SERVICE" ? 2 : 3'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.health
+        - uuid: 428ed92b93f849fda4bb3fc1cd39beff
+          name: 'Ping status'
+          type: DEPENDENT
+          key: metrics.health.ping
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Bridge state'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.components.ping.status
+              error_handler: CUSTOM_VALUE
+              error_handler_params: UNKNOWN
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="UP" ? 1 : value=="DOWN" ? 0 : value=="OUT_OF_SERVICE" ? 2 : 3'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.health
+        - uuid: 341a79b1d8de4a92b24f8a98497042ea
+          name: 'RefreshScope status'
+          type: DEPENDENT
+          key: metrics.health.refresh.scope
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Bridge state'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.components.refreshScope.status
+              error_handler: CUSTOM_VALUE
+              error_handler_params: UNKNOWN
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="UP" ? 1 : value=="DOWN" ? 0 : value=="OUT_OF_SERVICE" ? 2 : 3'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.health
+        - uuid: de7c6c98ba224210af2120fff7e3681d
+          name: 'General status'
+          type: DEPENDENT
+          key: metrics.health.status
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Bridge state'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.status
+              error_handler: CUSTOM_VALUE
+              error_handler_params: UNKNOWN
+            - type: JAVASCRIPT
+              parameters:
+                - 'return value=="UP" ? 1 : value=="DOWN" ? 0 : value=="OUT_OF_SERVICE" ? 2 : 3'
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          master_item:
+            key: metrics.health
+          triggers:
+            - uuid: adeee23e42cd4b1c90b06be4612e27dc
+              expression: last(/Bridge-server/metrics.health.status)<>1
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/Bridge-server/metrics.health.status)=1
+              name: 'Общая ошибка моста'
+              priority: HIGH
+              dependencies:
+                - name: 'Сервис моста не запущен'
+                  expression: last(/Bridge-server/bridgestatus)<>1
+                  recovery_expression: last(/Bridge-server/bridgestatus)=1
+        - uuid: 4dbb0beb223e41ec84a0a44a265168e4
+          name: Info
+          type: HTTP_AGENT
+          key: metrics.info
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          url: 'http://localhost:9339/api/metrics/info'
+        - uuid: fcd35ffc306e4ea68003eed8e3079253
+          name: Prometheus
+          type: HTTP_AGENT
+          key: metrics.prometheus
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$USER}'
+          password: '{$PASSWORD}'
+          url: 'http://localhost:9339/api/metrics/prometheus'
+        - uuid: 2269c59fd3474a19913b67bd567b2084
+          name: 'Process cpu usage'
+          type: DEPENDENT
+          key: process_cpu_usage
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - process_cpu_usage
+                - value
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: metrics.prometheus
+        - uuid: 62463ee21cee46ef9b91c42483f814e3
+          name: 'System cpu usage'
+          type: DEPENDENT
+          key: system_cpu_usage
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          units: '%'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - system_cpu_usage
+                - value
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: metrics.prometheus
+        - uuid: 50ce9494179241dd8c5ffc8c48697b9e
+          name: 'System load average 1m'
+          type: DEPENDENT
+          key: system_load_average_1m
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: FLOAT
+          description: 'The sum of the number of runnable entities queued to available processors and the number of runnable entities running on the available processors averaged over a period of time'
+          preprocessing:
+            - type: PROMETHEUS_PATTERN
+              parameters:
+                - system_load_average_1m
+                - value
+                - ''
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '0'
+          master_item:
+            key: metrics.prometheus
+        - uuid: 325290e475a049dcb470b67d8ffc0da2
+          name: 'Критические ошибки'
+          type: INTERNAL
+          key: 'zabbix[host,,items_unsupported]'
+          delay: 25s
+          history: 60d
+          trends: '0'
+          preprocessing:
+            - type: DISCARD_UNCHANGED_HEARTBEAT
+              parameters:
+                - 10m
+          triggers:
+            - uuid: 4e777d85ac404ac383864dfc4f39e411
+              expression: 'last(/Bridge-server/zabbix[host,,items_unsupported])<>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/Bridge-server/zabbix[host,,items_unsupported])=0'
+              name: 'Обнаружены критические ошибки'
+              priority: DISASTER
+      macros:
+        - macro: '{$PASSWORD}'
+          description: Пароль
+        - macro: '{$USER}'
+          value: zabbix
+          description: Пользователь
+      dashboards:
+        - uuid: 3da3d8d0982c464a8a4d95c92f5b14e3
+          name: 'Bridge health'
+          auto_start: 'NO'
+          pages:
+            - widgets:
+                - type: GRAPH_CLASSIC
+                  width: '9'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: 'Bridge health status'
+                - type: GRAPH_CLASSIC
+                  'y': '5'
+                  width: '9'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: 'Used memory'
+                - type: GRAPH_CLASSIC
+                  'y': '10'
+                  width: '9'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: 'System load average 1m'
+                - type: GRAPH_CLASSIC
+                  'y': '15'
+                  width: '24'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: Logback
+                - type: GRAPH_CLASSIC
+                  x: '9'
+                  width: '15'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: 'Bridge cpu usage'
+                - type: GRAPH_CLASSIC
+                  x: '9'
+                  'y': '5'
+                  width: '15'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: 'JVM used memory'
+                - type: GRAPH_CLASSIC
+                  x: '9'
+                  'y': '10'
+                  width: '15'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: Bridge-server
+                        name: 'JVM treads'
+      valuemaps:
+        - uuid: 2c50c0151a95413aafaa98aa3768f07f
+          name: 'Bridge state'
+          mappings:
+            - value: '1'
+              newvalue: UP
+            - value: '0'
+              newvalue: DOWN
+            - value: '2'
+              newvalue: OUT_OF_SERVICE
+            - value: '3'
+              newvalue: UNKNOWN
+        - uuid: e87a2575bf754b62aff7d9382dc1f009
+          name: 'Service status'
+          mappings:
+            - value: '0'
+              newvalue: 'inactive (dead)'
+            - value: '1'
+              newvalue: 'active (running)'
+            - value: '2'
+              newvalue: unknown
+  graphs:
+    - uuid: 88228efe53e84dc79c0a02da504e29c6
+      name: 'Bridge cpu usage'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: process_cpu_usage
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: system_cpu_usage
+        - sortorder: '2'
+          drawtype: GRADIENT_LINE
+          color: 0080FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: gc_overhead_percent
+    - uuid: f56de2d9fa034d31949c98220e9d744b
+      name: 'Bridge health status'
+      yaxismax: '3'
+      ymax_type_1: FIXED
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: metrics.health.database
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: metrics.health.diskspace
+        - sortorder: '2'
+          drawtype: GRADIENT_LINE
+          color: 0080FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: metrics.health.status
+        - sortorder: '3'
+          drawtype: GRADIENT_LINE
+          color: 00BFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: metrics.health.ping
+        - sortorder: '4'
+          drawtype: GRADIENT_LINE
+          color: 00FFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: metrics.health.refresh.scope
+        - sortorder: '5'
+          drawtype: GRADIENT_LINE
+          color: 00FFBF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: metrics.health.bots
+    - uuid: a743c23e28814e77b5975848939c7dc3
+      name: 'JVM treads'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_threads_states_threads_blocked
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_threads_states_threads_new
+        - sortorder: '2'
+          drawtype: GRADIENT_LINE
+          color: 0080FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_threads_states_threads_runnable
+        - sortorder: '3'
+          drawtype: GRADIENT_LINE
+          color: 00BFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_threads_states_threads_terminated
+        - sortorder: '4'
+          drawtype: GRADIENT_LINE
+          color: 00FFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_threads_states_threads_timed-waiting
+        - sortorder: '5'
+          drawtype: GRADIENT_LINE
+          color: 00FFBF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_threads_states_threads_waiting
+    - uuid: e799997733224ebfa3f3243d1498246e
+      name: 'JVM used memory'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_memory_used_G1_Eden_Space
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: memory_used_G1_Old_Gen
+        - sortorder: '2'
+          drawtype: GRADIENT_LINE
+          color: 0080FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: memory_used_G1_Survivor_Space
+        - sortorder: '3'
+          drawtype: GRADIENT_LINE
+          color: 00BFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_memory_used_CodeHeap_non-nmethods
+        - sortorder: '4'
+          drawtype: GRADIENT_LINE
+          color: 00FFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_memory_used_CodeHeap_non-profiled_nmethods
+        - sortorder: '5'
+          drawtype: GRADIENT_LINE
+          color: 00FFBF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: memory_used_CodeHeap_profiled_nmethods
+        - sortorder: '6'
+          drawtype: GRADIENT_LINE
+          color: 00FF00
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_memory_used_Compressed_Class_Space
+        - sortorder: '7'
+          drawtype: GRADIENT_LINE
+          color: 80FF00
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: jvm_memory_used_Metaspace
+    - uuid: c249cdfa44bb4befb74690eaa08db115
+      name: Logback
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: logback_events_total_debug
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: logback_events_total_error
+        - sortorder: '2'
+          drawtype: GRADIENT_LINE
+          color: 0080FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: logback_events_total_info
+        - sortorder: '3'
+          drawtype: GRADIENT_LINE
+          color: 00BFFF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: logback_events_total_warn
+    - uuid: 3d4785fa8ec54de3801195b045d1bf17
+      name: 'System load average 1m'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: system_load_average_1m
+    - uuid: d9deba24bfc54968a4e0df42b642a19b
+      name: 'Used memory'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: Bridge-server
+            key: bridgemem

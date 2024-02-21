@@ -1,0 +1,1494 @@
+zabbix_export:
+  version: '6.0'
+  date: '2024-02-21T16:40:20Z'
+  groups:
+    - uuid: 3a1928b66b124dd481baab880a3d3314
+      name: 'CHICKEN DENER'
+    - uuid: 5eb27a85ea8a414d8f82e58056c93ac0
+      name: DENER
+    - uuid: 0b4573412a00406ea853ddf3e0b47a54
+      name: FIREFOOD
+  templates:
+    - uuid: 1eea06687bb14251b31c556ae8924dfb
+      template: RouterTemplate
+      name: Роутер
+      groups:
+        - name: 'CHICKEN DENER'
+        - name: DENER
+        - name: FIREFOOD
+      items:
+        - uuid: f409fc15b2974a65a33fb374b51ae9a5
+          name: Опрос
+          type: HTTP_AGENT
+          key: router.survey
+          history: 1h
+          trends: '0'
+          value_type: TEXT
+          authtype: BASIC
+          username: '{$BRIDGE.LOGIN}'
+          password: '{$BRIDGE.PASSWORD}'
+          timeout: 50s
+          url: '{$BRIDGE.URL}/api/router/{$ROUTER.BRAND}/{$ROUTER.PROTO}/survey'
+          posts: |
+            {
+                "zabbixId": "{$ROUTER.ID}",
+                "ip": "{HOST.IP}",
+                "name": "{HOST.NAME}",
+                "login": "{$ROUTER.LOGIN}",
+                "password": "{$ROUTER.PASSWORD}",
+                "http": "{$ROUTER.HTTP}",
+                "service": "{$ROUTER.SERVICE}",
+                "devices": [
+                    {
+                        "mac": "{$KKT1.MAC}",
+                        "type": "KKT",
+                        "ip": "{$KKT1.IP}",
+                        "http": "{$KKT1.HTTP}",
+                        "key": "KKT1"
+                    },
+                    {
+                        "mac": "{$KKT2.MAC}",
+                        "type": "KKT",
+                        "ip": "{$KKT2.IP}",
+                        "http": "{$KKT2.HTTP}",
+                        "key": "KKT2"
+                    },
+                    {
+                        "mac": "{$TERMINAL1.MAC}",
+                        "type": "TERMINAL",
+                        "ip": "{$TERMINAL1.IP}",
+                        "http": "{$TERMINAL1.HTTP}",
+                        "key": "TERMINAL1"
+                    },
+                    {
+                        "mac": "{$TERMINAL2.MAC}",
+                        "type": "TERMINAL",
+                        "ip": "{$TERMINAL2.IP}",
+                        "http": "{$TERMINAL2.HTTP}",
+                        "key": "TERMINAL2"
+                    },
+                    {
+                        "mac": "{$HOTSPOT1.MAC}",
+                        "type": "HOTSPOT",
+                        "ip": "{$HOTSPOT1.IP}",
+                        "http": "{$HOTSPOT1.HTTP}",
+                        "key": "HOTSPOT1"
+                    },
+                    {
+                        "mac": "{$KEEPER1.MAC}",
+                        "type": "KEEPER",
+                        "ip": "{$KEEPER1.IP}",
+                        "service": "{$KEEPER1.SERVICE}",
+                        "key": "KEEPER1"
+                    },
+                    {
+                        "mac": "{$KEEPER2.MAC}",
+                        "type": "KEEPER",
+                        "ip": "{$KEEPER2.IP}",
+                        "service": "{$KEEPER2.SERVICE}",
+                        "key": "KEEPER2"
+                    },
+                    {
+                        "mac": "{$CAM1.MAC}",
+                        "type": "DVR",
+                        "ip": "{$CAM1.IP}",
+                        "http": "{$CAM1.HTTP}",
+                        "media": "{$CAM1.MEDIA}",
+                        "service": "{$CAM1.SERVICE}",
+                        "key": "CAM1"
+                    },
+                    {
+                        "mac": "{$CAM2.MAC}",
+                        "type": "DVR",
+                        "ip": "{$CAM2.IP}",
+                        "http": "{$CAM2.HTTP}",
+                        "media": "{$CAM2.MEDIA}",
+                        "service": "{$CAM2.SERVICE}",
+                        "key": "CAM2"
+                    },
+                    {
+                        "mac": "{$DVR1.MAC}",
+                        "type": "DVR",
+                        "ip": "{$DVR1.IP}",
+                        "http": "{$DVR1.HTTP}",
+                        "media": "{$DVR1.MEDIA}",
+                        "service": "{$DVR1.SERVICE}",
+                        "key": "DVR1"
+                    },
+                    {
+                        "mac": "{$DVR2.MAC}",
+                        "type": "DVR",
+                        "ip": "{$DVR2.IP}",
+                        "http": "{$DVR2.HTTP}",
+                        "media": "{$DVR2.MEDIA}",
+                        "service": "{$DVR2.SERVICE}",
+                        "key": "DVR2"
+                    }
+                ]
+            }
+          post_type: JSON
+          request_method: POST
+        - uuid: 32783cd01fac4d8788b1874b2e0b30a5
+          name: 'Статус камеры #1'
+          type: DEPENDENT
+          key: router.survey.CAM1.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.CAM1.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 4745bdca5fa042d992f1e3ebeb02e959
+              expression: last(/RouterTemplate/router.survey.CAM1.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.CAM1.code)<>2
+              name: 'Камера #1 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$CAM1.IP}'
+                - tag: MAC
+                  value: '{$CAM1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 3242e81fb3954b54b6db26f4e0724e86
+          name: 'Статус камеры #2'
+          type: DEPENDENT
+          key: router.survey.CAM2.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.CAM2.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 35cb6cce6cf84086b5bb555b9f818d17
+              expression: last(/RouterTemplate/router.survey.CAM2.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.CAM2.code)<>2
+              name: 'Камера #2 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$CAM2.IP}'
+                - tag: MAC
+                  value: '{$CAM2.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 0147e3a5174e4b76bab03da807895d52
+          name: 'Ответ моста'
+          type: DEPENDENT
+          key: router.survey.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Статус роутера'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '555'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: a266e119152c4338aa34b20e2b4ed6b1
+              expression: last(/RouterTemplate/router.survey.code)=503
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              name: 'Нет связи с объектом'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: HIGH
+              tags:
+                - tag: SOURCE
+                  value: HOST
+            - uuid: 1b6d6f4aa2144659a04c168f6a47d6c7
+              expression: last(/RouterTemplate/router.survey.code)=500
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.code)<>500
+              name: 'Ошибка моста'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: DISASTER
+              tags:
+                - tag: SOURCE
+                  value: BRIDGE
+            - uuid: 9ee3d5eb99ae4b70ad23ed5cc6b5aaec
+              expression: last(/RouterTemplate/router.survey.code)=201
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.code)<>201
+              name: 'Ошибка протокола, частичная проверка'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              tags:
+                - tag: SOURCE
+                  value: HOST
+            - uuid: 9eac2a9a8882443f8c1960ef9eaf5831
+              expression: last(/RouterTemplate/router.survey.code)=555
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.code)<>555
+              name: 'Ошибка чтения ответа'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: DISASTER
+              tags:
+                - tag: SOURCE
+                  value: ZABBIX
+        - uuid: eb37790dea4f4bd28703ceca25008446
+          name: Устройства
+          type: DEPENDENT
+          key: router.survey.discovery
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.discovery
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '<ERR>'
+          master_item:
+            key: router.survey
+        - uuid: 5c061921eb0c483b9661b887cde7faf0
+          name: 'Статус регистратора #1'
+          type: DEPENDENT
+          key: router.survey.DVR1.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.DVR1.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 22f53d97a1a245d69b15826927656d54
+              expression: last(/RouterTemplate/router.survey.DVR1.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.DVR1.code)<>2
+              name: 'Регистратор #1 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$DVR1.IP}'
+                - tag: MAC
+                  value: '{$DVR1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 43ae2bb4baef448893fbb085ac9063f6
+          name: 'Статус регистратора #2'
+          type: DEPENDENT
+          key: router.survey.DVR2.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.DVR2.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 66972fb567324354a124eac6bafd15bb
+              expression: last(/RouterTemplate/router.survey.DVR2.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.DVR2.code)<>2
+              name: 'Регистратор #2 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$DVR2.IP}'
+                - tag: MAC
+                  value: '{$DVR2.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 4aa62474903a4fdaaf406a8acf77dc62
+          name: 'Статус точки доступа #1'
+          type: DEPENDENT
+          key: router.survey.HOTSPOT1.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.HOTSPOT1.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 57acbebf73864187b0a827150d154f22
+              expression: last(/RouterTemplate/router.survey.HOTSPOT1.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.HOTSPOT1.code)<>2
+              name: 'Точка доступа #1 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$HOTSPOT1.IP}'
+                - tag: MAC
+                  value: '{$HOTSPOT1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 72e0d6294641493e8eaedf8144ee37e1
+          name: 'Статус кипера #1'
+          type: DEPENDENT
+          key: router.survey.KEEPER1.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.KEEPER1.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 5a115e22a8d34bd7a9ab2caf83aa31a3
+              expression: last(/RouterTemplate/router.survey.KEEPER1.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.KEEPER1.code)<>2
+              name: 'Кипер #1 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$KEEPER1.IP}'
+                - tag: MAC
+                  value: '{$KEEPER1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: e180fe3b3a8a468381af34246a9db298
+          name: 'Статус кипера #2'
+          type: DEPENDENT
+          key: router.survey.KEEPER2.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.KEEPER2.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 9371fec09e2d4d0a962106f371ace855
+              expression: last(/RouterTemplate/router.survey.KEEPER2.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.KEEPER2.code)<>2
+              name: 'Кипер #2 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$KEEPER2.IP}'
+                - tag: MAC
+                  value: '{$KEEPER2.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 2caeb36bdc7c444288768c03f3e50de7
+          name: 'Статус кассы #1'
+          type: DEPENDENT
+          key: router.survey.KKT1.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.KKT1.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 364d6e4f95d14c24a934942254203847
+              expression: last(/RouterTemplate/router.survey.KKT1.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.KKT1.code)<>2
+              name: 'Касса #1 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$KKT1.IP}'
+                - tag: MAC
+                  value: '{$KKT1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 70ed69ea243a4c38a4dd5f3ee2765969
+          name: 'Статус кассы #2'
+          type: DEPENDENT
+          key: router.survey.KKT2.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.KKT2.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: a9f80f381a7542ec9fdab303f729049e
+              expression: last(/RouterTemplate/router.survey.KKT2.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.KKT2.code)<>2
+              name: 'Касса #2 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$KKT2.IP}'
+                - tag: MAC
+                  value: '{$KKT2.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: 6c10ea285faf47618d2d0792284e0cef
+          name: Сообщение
+          type: DEPENDENT
+          key: router.survey.message
+          delay: '0'
+          history: 60d
+          trends: '0'
+          value_type: TEXT
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.message
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '<ERR>'
+          master_item:
+            key: router.survey
+        - uuid: 12fa7696b3e444e0a35291b1ed1e15dd
+          name: 'Статус роутера'
+          type: DEPENDENT
+          key: router.survey.ROUTER.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.ROUTER.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 579126e585f1414e9006f0da771025a5
+              expression: last(/RouterTemplate/router.survey.ROUTER.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.ROUTER.code)<>2
+              name: 'Нет связи с роутером'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: HIGH
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{HOST.IP}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: e80384cefdfd4e9eb555b381d0239234
+          name: 'Статус терминала #1'
+          type: DEPENDENT
+          key: router.survey.TERMINAL1.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.TERMINAL1.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 83994c4196fe402598cc62bbc327fcb9
+              expression: last(/RouterTemplate/router.survey.TERMINAL1.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.TERMINAL1.code)<>2
+              name: 'Терминал #1 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$TERMINAL1.IP}'
+                - tag: MAC
+                  value: '{$TERMINAL1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: f54d599ac75b44e693f0a478729e7969
+          name: 'Статус терминала #2'
+          type: DEPENDENT
+          key: router.survey.TERMINAL2.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.TERMINAL2.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: da884c5beb4c48f2bc21c6b824c32c04
+              expression: last(/RouterTemplate/router.survey.TERMINAL2.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.TERMINAL2.code)<>2
+              name: 'Терминал #2 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$TERMINAL2.IP}'
+                - tag: MAC
+                  value: '{$TERMINAL2.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: c3b960f90f1c44529e91b5619cd32c19
+          name: 'Критические ошибки'
+          type: INTERNAL
+          key: 'zabbix[host,,items_unsupported]'
+          delay: 30s
+          history: 1d
+          trends: '0'
+          triggers:
+            - uuid: 71c9c8b71017472ba2ed6182264a29e7
+              expression: 'last(/RouterTemplate/zabbix[host,,items_unsupported])<>0'
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: 'last(/RouterTemplate/zabbix[host,,items_unsupported])=0'
+              name: 'Критические ошибки мониторинга объекта'
+              opdata: '{ITEM.LASTVALUE}'
+              priority: DISASTER
+              tags:
+                - tag: SOURCE
+                  value: ZABBIX
+      macros:
+        - macro: '{$BRIDGE.LOGIN}'
+          value: zabbix
+          description: 'Логин моста'
+        - macro: '{$BRIDGE.PASSWORD}'
+          description: 'Пароль моста'
+        - macro: '{$BRIDGE.URL}'
+          value: 'http://localhost:9339'
+        - macro: '{$CAM1.HTTP}'
+          value: '88'
+          description: 'HTTP порт камеры #1'
+        - macro: '{$CAM1.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес камеры #1'
+        - macro: '{$CAM1.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес камеры #1'
+        - macro: '{$CAM1.MEDIA}'
+          value: '34567'
+          description: 'MEDIA порт камеры #1'
+        - macro: '{$CAM1.SERVICE}'
+          value: '554'
+          description: 'SERVICE порт камеры #1'
+        - macro: '{$CAM2.HTTP}'
+          value: '88'
+          description: 'HTTP порт камеры #2'
+        - macro: '{$CAM2.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес камеры #2'
+        - macro: '{$CAM2.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес камеры #2'
+        - macro: '{$CAM2.MEDIA}'
+          value: '34567'
+          description: 'MEDIA порт камеры #2'
+        - macro: '{$CAM2.SERVICE}'
+          value: '554'
+          description: 'SERVICE порт камеры #2'
+        - macro: '{$DVR1.HTTP}'
+          value: '88'
+          description: 'HTTP порт регистратора #1'
+        - macro: '{$DVR1.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес регистратора #1'
+        - macro: '{$DVR1.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес регистратора #1'
+        - macro: '{$DVR1.MEDIA}'
+          value: '34567'
+          description: 'MEDIA порт регистратора #1'
+        - macro: '{$DVR1.SERVICE}'
+          value: '554'
+          description: 'SERVICE порт регистратора #1'
+        - macro: '{$DVR2.HTTP}'
+          value: '88'
+          description: 'HTTP порт регистратора #2'
+        - macro: '{$DVR2.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес регистратора #2'
+        - macro: '{$DVR2.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес регистратора #2'
+        - macro: '{$DVR2.MEDIA}'
+          value: '34567'
+          description: 'MEDIA порт регистратора #2'
+        - macro: '{$DVR2.SERVICE}'
+          value: '554'
+          description: 'SERVICE порт регистратора #2'
+        - macro: '{$HOTSPOT1.HTTP}'
+          value: '0'
+          description: 'HTTP порт точки доступа #1'
+        - macro: '{$HOTSPOT1.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес точки доступа #1'
+        - macro: '{$HOTSPOT1.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес точки доступа #1'
+        - macro: '{$KEEPER1.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес кипера #1'
+        - macro: '{$KEEPER1.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес кипера #1'
+        - macro: '{$KEEPER1.SERVICE}'
+          value: '50601'
+          description: 'SERVICE порт кипера #1'
+        - macro: '{$KEEPER2.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес кипера #2'
+        - macro: '{$KEEPER2.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес кипера #2'
+        - macro: '{$KEEPER2.SERVICE}'
+          value: '50601'
+          description: 'SERVICE порт кипера #2'
+        - macro: '{$KKT1.HTTP}'
+          value: '0'
+          description: 'HTTP порт кассы #1'
+        - macro: '{$KKT1.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес кассы #1'
+        - macro: '{$KKT1.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес кассы #1'
+        - macro: '{$KKT2.HTTP}'
+          value: '0'
+          description: 'HTTP порт кассы #2'
+        - macro: '{$KKT2.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес кассы #2'
+        - macro: '{$KKT2.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес кассы #2'
+        - macro: '{$ROUTER.BRAND}'
+          value: KEENETIC
+          description: 'Модель роутера'
+        - macro: '{$ROUTER.HTTP}'
+          value: '80'
+          description: 'HTTP порт роутера'
+        - macro: '{$ROUTER.ID}'
+          value: '0'
+          description: 'ID точки zabbix'
+        - macro: '{$ROUTER.LOGIN}'
+          value: admin
+          description: 'Логин роутера'
+        - macro: '{$ROUTER.PASSWORD}'
+          description: 'Пароль роутера'
+        - macro: '{$ROUTER.PROTO}'
+          value: SSH
+          description: 'Протокол доступа'
+        - macro: '{$ROUTER.SERVICE}'
+          value: '54122'
+          description: 'SERVICE порт роутера'
+        - macro: '{$TERMINAL1.HTTP}'
+          value: '0'
+          description: 'HTTP порт терминала #1'
+        - macro: '{$TERMINAL1.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес терминала #1'
+        - macro: '{$TERMINAL1.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес терминала #1'
+        - macro: '{$TERMINAL2.HTTP}'
+          value: '0'
+          description: 'HTTP порт терминала #2'
+        - macro: '{$TERMINAL2.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес терминала #2'
+        - macro: '{$TERMINAL2.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес терминала #2'
+      dashboards:
+        - uuid: 7d60cb62abe444dc92683d52b71712e3
+          name: 'Состояние объекта'
+          pages:
+            - widgets:
+                - type: GRAPH_CLASSIC
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: 'Роутер и мост'
+                - type: GRAPH_CLASSIC
+                  'y': '5'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: Терминалы
+                - type: GRAPH_CLASSIC
+                  'y': '10'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: Киперы
+                - type: GRAPH_CLASSIC
+                  'y': '15'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: 'Точка доступа'
+                - type: GRAPH_CLASSIC
+                  x: '12'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: Регистраторы
+                - type: GRAPH_CLASSIC
+                  x: '12'
+                  'y': '5'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: Кассы
+                - type: GRAPH_CLASSIC
+                  x: '12'
+                  'y': '10'
+                  width: '12'
+                  height: '5'
+                  fields:
+                    - type: GRAPH
+                      name: graphid
+                      value:
+                        host: RouterTemplate
+                        name: Камеры
+                - type: ITEM
+                  x: '12'
+                  'y': '15'
+                  width: '7'
+                  height: '5'
+                  fields:
+                    - type: ITEM
+                      name: itemid
+                      value:
+                        host: RouterTemplate
+                        key: 'zabbix[host,,items_unsupported]'
+                - type: CLOCK
+                  x: '19'
+                  'y': '15'
+                  width: '5'
+                  height: '5'
+                  fields:
+                    - type: INTEGER
+                      name: time_type
+                      value: '1'
+      valuemaps:
+        - uuid: c76594653f494aad9dcc4d3519a355cf
+          name: 'Статус роутера'
+          mappings:
+            - value: '200'
+              newvalue: OK
+            - value: '201'
+              newvalue: CON/ERR
+            - value: '500'
+              newvalue: INT/ERR
+            - value: '503'
+              newvalue: NOT/AVAIL
+            - value: '555'
+              newvalue: CRITICAL
+            - value: '400'
+              newvalue: NOT/VALID
+        - uuid: bcb934813ae54f31b65eaafe471fe68a
+          name: 'Статус устройства'
+          mappings:
+            - value: '1'
+              newvalue: 'В сети'
+            - value: '2'
+              newvalue: 'Не в сети'
+            - value: '3'
+              newvalue: 'Не проверено'
+            - value: '4'
+              newvalue: 'Ошибка проверки'
+  triggers:
+    - uuid: adfab969556f4b7fb672f0d81596db8c
+      expression: 'last(/RouterTemplate/router.survey.CAM1.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.CAM1.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Камера #1 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$CAM1.IP}'
+        - tag: MAC
+          value: '{$CAM1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: beeac94884bd482097bad3c48a0a95b2
+      expression: 'last(/RouterTemplate/router.survey.CAM1.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.CAM1.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Камера #1 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$CAM1.IP}'
+        - tag: MAC
+          value: '{$CAM1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 9f4f83d88b7043efae1573c71b95dc3c
+      expression: 'last(/RouterTemplate/router.survey.CAM2.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.CAM2.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Камера #2 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$CAM2.IP}'
+        - tag: MAC
+          value: '{$CAM2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 5a9e6b781e8146a59a28816542a82290
+      expression: 'last(/RouterTemplate/router.survey.CAM2.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.CAM2.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Камера #2 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$CAM2.IP}'
+        - tag: MAC
+          value: '{$CAM2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 3c347a4c3dd24149b7809e38e3b80e92
+      expression: 'last(/RouterTemplate/router.survey.KKT1.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KKT1.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Касса #1 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KKT1.IP}'
+        - tag: MAC
+          value: '{$KKT1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 7d836eee1b874eecb64a9a8885de7f3e
+      expression: 'last(/RouterTemplate/router.survey.KKT1.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KKT1.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Касса #1 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KKT1.IP}'
+        - tag: MAC
+          value: '{$KKT1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 044b1aca61b7421a9213806b199301f2
+      expression: 'last(/RouterTemplate/router.survey.KKT2.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KKT2.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Касса #2 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KKT2.IP}'
+        - tag: MAC
+          value: '{$KKT2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 0deb8b61c1eb4bd6bec50428164e3cb0
+      expression: 'last(/RouterTemplate/router.survey.KKT2.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KKT2.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Касса #2 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KKT2.IP}'
+        - tag: MAC
+          value: '{$KKT2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: d0cdb10972a540819b631c00f9864319
+      expression: 'last(/RouterTemplate/router.survey.KEEPER1.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KEEPER1.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Кипер #1 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KEEPER1.IP}'
+        - tag: MAC
+          value: '{$KEEPER1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 9aa8a535796f4f5db4c15147bea248e4
+      expression: 'last(/RouterTemplate/router.survey.KEEPER1.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KEEPER1.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Кипер #1 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KEEPER1.IP}'
+        - tag: MAC
+          value: '{$KEEPER1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: c7c101128e2d4013964129f6372c1ef5
+      expression: 'last(/RouterTemplate/router.survey.KEEPER2.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KEEPER2.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Кипер #2 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KEEPER2.IP}'
+        - tag: MAC
+          value: '{$KEEPER2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 8e1b45f02e6f4f198d82afbdbfb4a7ac
+      expression: 'last(/RouterTemplate/router.survey.KEEPER2.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.KEEPER2.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Кипер #2 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$KEEPER2.IP}'
+        - tag: MAC
+          value: '{$KEEPER2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 7fe71a421d0147f5aaa161acddab195f
+      expression: 'last(/RouterTemplate/router.survey.DVR1.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.DVR1.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Регистратор #1 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$DVR1.IP}'
+        - tag: MAC
+          value: '{$DVR1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 3ad2fb102d4a45309c5a4c383461e32b
+      expression: 'last(/RouterTemplate/router.survey.DVR1.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.DVR1.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Регистратор #1 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$DVR1.IP}'
+        - tag: MAC
+          value: '{$DVR1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: b6991f5c806d485393323d6ac6f0950f
+      expression: 'last(/RouterTemplate/router.survey.DVR2.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.DVR2.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Регистратор #2 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$DVR2.IP}'
+        - tag: MAC
+          value: '{$DVR2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 6c0b03dc829f4d9b8e72d33053fe773a
+      expression: 'last(/RouterTemplate/router.survey.DVR2.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.DVR2.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Регистратор #2 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$DVR2.IP}'
+        - tag: MAC
+          value: '{$DVR2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: ddba83f2ae9b4c92b398803d8a48f96c
+      expression: 'last(/RouterTemplate/router.survey.TERMINAL1.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.TERMINAL1.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Терминал #1 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$TERMINAL1.IP}'
+        - tag: MAC
+          value: '{$TERMINAL1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 3dee6afb31344500a0c1a8a62e0068fc
+      expression: 'last(/RouterTemplate/router.survey.TERMINAL1.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.TERMINAL1.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Терминал #1 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$TERMINAL1.IP}'
+        - tag: MAC
+          value: '{$TERMINAL1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 7371e3ac17074c0e8d1e0bf67a8edc00
+      expression: 'last(/RouterTemplate/router.survey.TERMINAL2.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.TERMINAL2.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Терминал #2 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$TERMINAL2.IP}'
+        - tag: MAC
+          value: '{$TERMINAL2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 2de89f89284a4b0794ded65b48afc235
+      expression: 'last(/RouterTemplate/router.survey.TERMINAL2.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.TERMINAL2.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Терминал #2 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$TERMINAL2.IP}'
+        - tag: MAC
+          value: '{$TERMINAL2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: b65f71496b9d4c909d9d7daa6c00dc27
+      expression: 'last(/RouterTemplate/router.survey.HOTSPOT1.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.HOTSPOT1.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Точка доступа #1 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$HOTSPOT1.IP}'
+        - tag: MAC
+          value: '{$HOTSPOT1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: b4c6824dadb64036a73b9720a2789f4e
+      expression: 'last(/RouterTemplate/router.survey.HOTSPOT1.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.HOTSPOT1.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Точка доступа #1 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$HOTSPOT1.IP}'
+        - tag: MAC
+          value: '{$HOTSPOT1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+  graphs:
+    - uuid: d8c9b724838247368bd52fa71195781a
+      name: Камеры
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.CAM1.code
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.CAM2.code
+    - uuid: c5f28df7b93b4971ac053c2a6542a98e
+      name: Кассы
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.KKT1.code
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.KKT2.code
+    - uuid: 057e60a310894b03b2ad4e3597fbdbcf
+      name: Киперы
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.KEEPER1.code
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.KEEPER2.code
+    - uuid: 4834dad665394c7ca02358989ade8830
+      name: Регистраторы
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.DVR1.code
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.DVR2.code
+    - uuid: 2c988839e9444333b2377f00c0e0c6a6
+      name: 'Роутер и мост'
+      graph_items:
+        - drawtype: BOLD_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.code
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: F63100
+          yaxisside: RIGHT
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.ROUTER.code
+    - uuid: 15ddc8792ba94d62af9679b0f753fab9
+      name: Терминалы
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.TERMINAL1.code
+        - sortorder: '1'
+          drawtype: GRADIENT_LINE
+          color: 0040FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.TERMINAL2.code
+    - uuid: f803a0be99c6459a8666e59dd4eb81a1
+      name: 'Точка доступа'
+      graph_items:
+        - drawtype: GRADIENT_LINE
+          color: 4000FF
+          calc_fnc: ALL
+          item:
+            host: RouterTemplate
+            key: router.survey.HOTSPOT1.code
