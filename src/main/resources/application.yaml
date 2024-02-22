@@ -9,9 +9,11 @@ server:
     resource.allow-caching: false
     threads:
       max: 300
-      min-spare: 20
+      min-spare: 40
     keep-alive-timeout: 40
     max-keep-alive-requests: 10
+    max-http-form-post-size: 5MB
+    max-connections: 400
   servlet.context-path: /api
   ssl:
     enabled: ${SERVER_SSL_ENABLE}

@@ -74,7 +74,6 @@ public class CheckUtils {
               .build());
 
     } catch (BridgeException be) {
-      log.error("FULL-CHECK-FAIL: Message: '%s'".formatted(be.getLocalizedMessage()));
       var extMessage = FULL_CHECK_RESULT.formatted(be.getLocalizedMessage(), openedPorts);
 
       return Map.entry(

@@ -1,5 +1,6 @@
 package ru.krsmon.zabbixrouterbridge.clients.impl;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.EXECUTION_ERROR;
 import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.COMMAND;
 import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.LOGIN;
@@ -37,9 +38,10 @@ public class ClientTelnet2Impl implements Client {
   public boolean connect(@NonNull ClientCfg cfg) {
     try {
       log.info("TELNET: Connect to '%s:%s'...".formatted(cfg.ip(), cfg.port()));
-      client.setDefaultTimeout(timeout * 10_000);
+      client.setConnectTimeout(timeout * 1000);
       client.connect(cfg.ip(), cfg.port());
       client.setKeepAlive(true);
+      client.setCharset(UTF_8);
       writer = new PrintStream(client.getOutputStream());
       reader = client.getInputStream();
 
