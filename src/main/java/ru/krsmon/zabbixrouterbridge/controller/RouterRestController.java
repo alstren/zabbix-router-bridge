@@ -1,7 +1,5 @@
 package ru.krsmon.zabbixrouterbridge.controller;
 
-import static org.springframework.web.bind.annotation.RequestMethod.POST;
-
 import io.micrometer.core.annotation.Counted;
 import io.micrometer.core.annotation.Timed;
 import javax.validation.Valid;
@@ -9,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +23,6 @@ import ru.krsmon.zabbixrouterbridge.service.RouterService;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/router")
-@CrossOrigin(maxAge = 3600, methods = POST)
 public class RouterRestController {
   private final RouterService routerService;
 

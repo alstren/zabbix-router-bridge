@@ -4,6 +4,7 @@ import static javax.persistence.CascadeType.ALL;
 import static javax.persistence.FetchType.EAGER;
 
 import java.util.Set;
+import javax.persistence.Cacheable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Index;
@@ -23,6 +24,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 @Getter
 @Setter
 @ToString
+@Cacheable
 @Table(name = "users", indexes = {
     @Index(name = "idx_user_name", unique = true, columnList = "username"),
     @Index(name = "idx_user_telegram_id", unique = true, columnList = "telegram_id")

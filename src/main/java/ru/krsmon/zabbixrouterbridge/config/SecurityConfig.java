@@ -26,8 +26,7 @@ public class SecurityConfig {
   @Bean
   SecurityFilterChain filterChain(@NonNull HttpSecurity http) throws Exception {
     return http
-        .cors()
-        .and().csrf().disable()
+        .csrf().disable()
         .userDetailsService(userService)
         .authorizeRequests()
         .antMatchers("/metrics/**").permitAll()

@@ -15,9 +15,9 @@ class ThreadPoolConfig {
   @Primary
   Executor executor() {
     var executor =  new ThreadPoolTaskExecutor();
-    executor.setCorePoolSize(300);
-    executor.setMaxPoolSize(1000);
-    executor.setQueueCapacity(200);
+    executor.setCorePoolSize(150);
+    executor.setMaxPoolSize(400);
+    executor.setQueueCapacity(150);
     executor.setKeepAliveSeconds(50);
     executor.setAllowCoreThreadTimeOut(true);
     executor.setWaitForTasksToCompleteOnShutdown(true);
