@@ -1,6 +1,10 @@
 package ru.krsmon.zabbixrouterbridge.dto;
 
+import static java.util.Arrays.asList;
+import static java.util.Objects.isNull;
 import static java.util.stream.Collectors.toSet;
+import static ru.krsmon.zabbixrouterbridge.dto.Policy.PING_OR_PORTS;
+import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.POR;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -42,6 +46,14 @@ public class DeviceDto {
 
   @NotBlank(message = "The external KEY of device is required.")
   private String key;
+
+  private String spec;
+
+  public Policy getPolicy() {
+    return (isNull(spec) || !asList(spec.split(",")).contains(POR))
+      ? type.getPolicy()
+      : PING_OR_PORTS;
+  }
 
   public String getMac() {
     return mac.toUpperCase();

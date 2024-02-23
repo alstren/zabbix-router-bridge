@@ -16,5 +16,7 @@ public class GlobalConstrains {
   public static final String DEFAULT_IP = "0.0.0.0";
   public static final String DEFAULT_MAC = "00:00:00:00:00:00";
 
+  // Special flags
+  public static final String POR = "POR"; // Flag for forced policy change.
 
 }

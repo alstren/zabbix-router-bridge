@@ -66,7 +66,7 @@ public class CheckUtils {
       return Map.entry(
           device.getKey(),
           DeviceStatus.builder()
-              .code(isOnline(pingResult.getKey(), !openedPorts.isEmpty(), device.getType().getPolicy())
+              .code(isOnline(pingResult.getKey(), !openedPorts.isEmpty(), device.getPolicy())
                   ? ONLINE.getCode()
                   : OFFLINE.getCode())
               .message(extMessage)
