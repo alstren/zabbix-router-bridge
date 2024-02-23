@@ -6,6 +6,7 @@ server:
     accesslog.enabled: false
     connection-timeout: 40
     max-http-form-post-size: 5MB
+    threads.max: 500
   servlet.context-path: /api
   ssl:
     enabled: ${SERVER_SSL_ENABLE}

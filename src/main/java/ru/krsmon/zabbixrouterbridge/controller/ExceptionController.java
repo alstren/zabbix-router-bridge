@@ -44,7 +44,7 @@ public class ExceptionController {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<RouterSurveyResponse> exception(@NonNull Exception exception) {
     var message = "CRITICAL: %s".formatted(exception.getLocalizedMessage());
-    log.error(message);
+    log.error(message, exception);
     return ResponseEntity.ok(RouterSurveyResponse.builder()
         .code(INTERNAL_SERVER_ERROR.value())
         .message(message)
