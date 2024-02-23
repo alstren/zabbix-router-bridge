@@ -26,15 +26,17 @@ public class SecurityConfig {
   @Bean
   SecurityFilterChain filterChain(@NonNull HttpSecurity http) throws Exception {
     return http
-        .cors().and().csrf().disable()
+        .cors()
+        .and().csrf().disable()
         .userDetailsService(userService)
         .authorizeRequests()
         .antMatchers("/metrics/**").permitAll()
         .antMatchers("/router/**").hasAnyAuthority(ROLE_ROOT, ROLE_ZABBIX)
         .anyRequest().authenticated()
         .and().formLogin().permitAll()
-        .and()
-        .httpBasic()
+        .and().logout().permitAll()
+        .and().httpBasic()
+        .and().rememberMe()
         .and().build();
   }
 
