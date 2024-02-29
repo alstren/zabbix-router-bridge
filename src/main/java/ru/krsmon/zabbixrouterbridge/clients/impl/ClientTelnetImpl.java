@@ -4,7 +4,6 @@ import static java.util.Objects.nonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static net.sf.expectit.matcher.Matchers.contains;
 import static org.apache.commons.net.SocketClient.NETASCII_EOL;
-import static org.springframework.context.annotation.ScopedProxyMode.TARGET_CLASS;
 import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.EXECUTION_ERROR;
 import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.LOGIN;
 import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.PASS;
@@ -25,8 +24,8 @@ import ru.krsmon.zabbixrouterbridge.clients.config.ClientCfg;
 import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 
 @Slf4j
+@RequestScope
 @Component("TELNET")
-@RequestScope(proxyMode = TARGET_CLASS)
 public class ClientTelnetImpl implements Client {
   private final TelnetClient client = new TelnetClient();
   private final StringBuilder routerLog = new StringBuilder();

@@ -4,7 +4,6 @@ import static java.lang.System.err;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.nonNull;
 import static org.apache.sshd.client.SshClient.setUpDefaultSimpleClient;
-import static org.springframework.context.annotation.ScopedProxyMode.TARGET_CLASS;
 import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.EXECUTION_ERROR;
 import static ru.krsmon.zabbixrouterbridge.utils.LogUtils.printLog;
 
@@ -20,8 +19,8 @@ import ru.krsmon.zabbixrouterbridge.clients.config.ClientCfg;
 import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 
 @Slf4j
+@RequestScope
 @Service("SSH")
-@RequestScope(proxyMode = TARGET_CLASS)
 public class ClientSshImpl implements Client {
   private final SimpleClient client = setUpDefaultSimpleClient();
   private ClientSession session;
