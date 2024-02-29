@@ -5,7 +5,7 @@ import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
 import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.DEFAULT_IP;
 import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.DEFAULT_MAC;
-import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.LINE_SEPARATOR;
+import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.NEW_LINE;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -22,7 +22,7 @@ public class RegexUtils {
   private static final String IP_PREFIX = "192.168";
 
   public static Map<String, String> toArpMap(@NonNull String log) {
-    return Arrays.stream(log.split(LINE_SEPARATOR))
+    return Arrays.stream(log.split(NEW_LINE))
         .map(line -> {
           var ipMatcher = IP_FIND.matcher(line);
           var macMatcher = MAC_FIND.matcher(line);
@@ -40,7 +40,7 @@ public class RegexUtils {
 
   public static Map.Entry<Boolean, String> toPingResult(@NonNull String logs) {
     try {
-      for (var line : logs.split(LINE_SEPARATOR)) {
+      for (var line : logs.split(NEW_LINE)) {
         var matcher = PACKET_LOSS.matcher(line);
         if (matcher.find()) {
           var loss = parseInt(matcher.group(0).replaceAll(PATTERN_REPLACE, ""));

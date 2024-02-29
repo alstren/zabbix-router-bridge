@@ -134,7 +134,6 @@ public class RouterServiceImpl implements RouterService {
     }
 
     var isSuccess = validateResult(resultMap);
-
     return RouterSurveyResponse.builder()
         .code(isSuccess ? message.isEmpty() ? 200 : 201 : 503)
         .message(isSuccess ? message.toString().isEmpty() ? "Success" : message.toString() : "HOST OFFLINE")
