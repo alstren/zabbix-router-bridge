@@ -1,15 +1,5 @@
 package ru.krsmon.zabbixrouterbridge.clients.impl;
 
-import static java.util.Objects.nonNull;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static net.sf.expectit.matcher.Matchers.contains;
-import static org.apache.commons.net.SocketClient.NETASCII_EOL;
-import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.EXECUTION_ERROR;
-import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.LOGIN;
-import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.PASS;
-import static ru.krsmon.zabbixrouterbridge.utils.LogUtils.printLog;
-
-import java.util.UUID;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.expectit.Expect;
@@ -22,6 +12,17 @@ import org.springframework.web.context.annotation.RequestScope;
 import ru.krsmon.zabbixrouterbridge.clients.Client;
 import ru.krsmon.zabbixrouterbridge.clients.config.ClientCfg;
 import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
+
+import java.util.UUID;
+
+import static java.util.Objects.nonNull;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static net.sf.expectit.matcher.Matchers.contains;
+import static org.apache.commons.net.SocketClient.NETASCII_EOL;
+import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.EXECUTION_ERROR;
+import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.LOGIN;
+import static ru.krsmon.zabbixrouterbridge.utils.GlobalConstrains.PASS;
+import static ru.krsmon.zabbixrouterbridge.utils.LogUtils.printLog;
 
 @Slf4j
 @RequestScope
@@ -51,16 +52,15 @@ public class ClientTelnetImpl implements Client {
             .withEchoInput(routerLog)
             .withLineSeparator(NETASCII_EOL)
             .withAutoFlushEcho(true)
-            .withTimeout(timeout, SECONDS)
             .withExceptionOnFailure()
             .build();
 
         log.info("TELNET: Login to host by user '%s'".formatted(cfg.login()));
-        expect.expect(contains(LOGIN));
+        expect.withTimeout(10, SECONDS).expect(contains(LOGIN));
         expect.sendLine(cfg.login());
-        expect.expect(contains(PASS));
+        expect.withTimeout(10, SECONDS).expect(contains(PASS));
         expect.sendLine(cfg.password());
-        expect.expect(contains(cfg.invite()));
+        expect.withTimeout(10, SECONDS).expect(contains(cfg.invite()));
       }
 
       log.info("TELNET: Connected to '%s:%s'.".formatted(cfg.ip(), cfg.port()));
@@ -80,7 +80,7 @@ public class ClientTelnetImpl implements Client {
       expect.sendLine(cmd);
       var uuid = UUID.randomUUID().toString();
       routerLog.append(uuid);
-      expect.expect(contains(cfg.invite()));
+      expect.withTimeout(10, SECONDS).expect(contains(cfg.invite()));
       var result = routerLog.substring(routerLog.toString().indexOf(uuid));
       log.debug("TELNET: Response of executed command: \n'%s'".formatted(result));
       return result;
