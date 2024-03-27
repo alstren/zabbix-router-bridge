@@ -1,6 +1,6 @@
 zabbix_export:
   version: '6.0'
-  date: '2024-02-21T16:40:20Z'
+  date: '2024-03-27T17:45:25Z'
   groups:
     - uuid: 3a1928b66b124dd481baab880a3d3314
       name: 'CHICKEN DENER'
@@ -44,49 +44,64 @@ zabbix_export:
                         "type": "KKT",
                         "ip": "{$KKT1.IP}",
                         "http": "{$KKT1.HTTP}",
-                        "key": "KKT1"
+                        "key": "KKT1",
+                        "spec": "{$KKT1.SPEC}"
                     },
                     {
                         "mac": "{$KKT2.MAC}",
                         "type": "KKT",
                         "ip": "{$KKT2.IP}",
                         "http": "{$KKT2.HTTP}",
-                        "key": "KKT2"
+                        "key": "KKT2",
+                        "spec": "{$KKT2.SPEC}"
                     },
                     {
                         "mac": "{$TERMINAL1.MAC}",
                         "type": "TERMINAL",
                         "ip": "{$TERMINAL1.IP}",
                         "http": "{$TERMINAL1.HTTP}",
-                        "key": "TERMINAL1"
+                        "key": "TERMINAL1",
+                        "spec": "{$TERMINAL1.SPEC}"
                     },
                     {
                         "mac": "{$TERMINAL2.MAC}",
                         "type": "TERMINAL",
                         "ip": "{$TERMINAL2.IP}",
                         "http": "{$TERMINAL2.HTTP}",
-                        "key": "TERMINAL2"
+                        "key": "TERMINAL2",
+                        "spec": "{$TERMINAL2.SPEC}"
                     },
                     {
                         "mac": "{$HOTSPOT1.MAC}",
                         "type": "HOTSPOT",
                         "ip": "{$HOTSPOT1.IP}",
                         "http": "{$HOTSPOT1.HTTP}",
-                        "key": "HOTSPOT1"
+                        "key": "HOTSPOT1",
+                        "spec": "{$HOTSPOT1.SPEC}"
+                    },
+                    {
+                        "mac": "{$HOTSPOT2.MAC}",
+                        "type": "HOTSPOT",
+                        "ip": "{$HOTSPOT2.IP}",
+                        "http": "{$HOTSPOT2.HTTP}",
+                        "key": "HOTSPOT2",
+                        "spec": "{$HOTSPOT2.SPEC}"
                     },
                     {
                         "mac": "{$KEEPER1.MAC}",
                         "type": "KEEPER",
                         "ip": "{$KEEPER1.IP}",
                         "service": "{$KEEPER1.SERVICE}",
-                        "key": "KEEPER1"
+                        "key": "KEEPER1",
+                        "spec": "{$KEEPER1.SPEC}"
                     },
                     {
                         "mac": "{$KEEPER2.MAC}",
                         "type": "KEEPER",
                         "ip": "{$KEEPER2.IP}",
                         "service": "{$KEEPER2.SERVICE}",
-                        "key": "KEEPER2"
+                        "key": "KEEPER2",
+                        "spec": "{$KEEPER2.SPEC}"
                     },
                     {
                         "mac": "{$CAM1.MAC}",
@@ -95,7 +110,8 @@ zabbix_export:
                         "http": "{$CAM1.HTTP}",
                         "media": "{$CAM1.MEDIA}",
                         "service": "{$CAM1.SERVICE}",
-                        "key": "CAM1"
+                        "key": "CAM1",
+                        "spec": "{$CAM1.SPEC}"
                     },
                     {
                         "mac": "{$CAM2.MAC}",
@@ -104,7 +120,8 @@ zabbix_export:
                         "http": "{$CAM2.HTTP}",
                         "media": "{$CAM2.MEDIA}",
                         "service": "{$CAM2.SERVICE}",
-                        "key": "CAM2"
+                        "key": "CAM2",
+                        "spec": "{$CAM2.SPEC}"
                     },
                     {
                         "mac": "{$DVR1.MAC}",
@@ -113,7 +130,8 @@ zabbix_export:
                         "http": "{$DVR1.HTTP}",
                         "media": "{$DVR1.MEDIA}",
                         "service": "{$DVR1.SERVICE}",
-                        "key": "DVR1"
+                        "key": "DVR1",
+                        "spec": "{$DVR1.SPEC}"
                     },
                     {
                         "mac": "{$DVR2.MAC}",
@@ -122,7 +140,8 @@ zabbix_export:
                         "http": "{$DVR2.HTTP}",
                         "media": "{$DVR2.MEDIA}",
                         "service": "{$DVR2.SERVICE}",
-                        "key": "DVR2"
+                        "key": "DVR2",
+                        "spec": "{$DVR2.SPEC}"
                     }
                 ]
             }
@@ -393,6 +412,44 @@ zabbix_export:
                   value: '{$HOTSPOT1.IP}'
                 - tag: MAC
                   value: '{$HOTSPOT1.MAC}'
+                - tag: SOURCE
+                  value: DEVICE
+        - uuid: a47fc1641d2c4c86aae590fd925a6b6e
+          name: 'Статус точки доступа #2'
+          type: DEPENDENT
+          key: router.survey.HOTSPOT2.code
+          delay: '0'
+          history: 60d
+          trends: '0'
+          status: DISABLED
+          valuemap:
+            name: 'Статус устройства'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - $.result.HOTSPOT2.code
+              error_handler: CUSTOM_VALUE
+              error_handler_params: '4'
+          master_item:
+            key: router.survey
+          triggers:
+            - uuid: 3fe57e8a93da4414b1067aa7ff97cf9e
+              expression: last(/RouterTemplate/router.survey.HOTSPOT2.code)=2
+              recovery_mode: RECOVERY_EXPRESSION
+              recovery_expression: last(/RouterTemplate/router.survey.HOTSPOT2.code)<>2
+              name: 'Точка доступа #2 не в сети'
+              opdata: '{ITEM.LASTVALUE}'
+              url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+              priority: AVERAGE
+              dependencies:
+                - name: 'Нет связи с объектом'
+                  expression: last(/RouterTemplate/router.survey.code)=503
+                  recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+              tags:
+                - tag: IP
+                  value: '{$HOTSPOT2.IP}'
+                - tag: MAC
+                  value: '{$HOTSPOT2.MAC}'
                 - tag: SOURCE
                   value: DEVICE
         - uuid: 72e0d6294641493e8eaedf8144ee37e1
@@ -688,6 +745,7 @@ zabbix_export:
               recovery_expression: 'last(/RouterTemplate/zabbix[host,,items_unsupported])=0'
               name: 'Критические ошибки мониторинга объекта'
               opdata: '{ITEM.LASTVALUE}'
+              status: DISABLED
               priority: DISASTER
               tags:
                 - tag: SOURCE
@@ -697,6 +755,7 @@ zabbix_export:
           value: zabbix
           description: 'Логин моста'
         - macro: '{$BRIDGE.PASSWORD}'
+          value: stub
           description: 'Пароль моста'
         - macro: '{$BRIDGE.URL}'
           value: 'http://localhost:9339'
@@ -715,6 +774,8 @@ zabbix_export:
         - macro: '{$CAM1.SERVICE}'
           value: '554'
           description: 'SERVICE порт камеры #1'
+        - macro: '{$CAM1.SPEC}'
+          description: 'Спец флаг для камеры #1'
         - macro: '{$CAM2.HTTP}'
           value: '88'
           description: 'HTTP порт камеры #2'
@@ -730,6 +791,8 @@ zabbix_export:
         - macro: '{$CAM2.SERVICE}'
           value: '554'
           description: 'SERVICE порт камеры #2'
+        - macro: '{$CAM2.SPEC}'
+          description: 'Спец флаг для камеры #2'
         - macro: '{$DVR1.HTTP}'
           value: '88'
           description: 'HTTP порт регистратора #1'
@@ -745,6 +808,8 @@ zabbix_export:
         - macro: '{$DVR1.SERVICE}'
           value: '554'
           description: 'SERVICE порт регистратора #1'
+        - macro: '{$DVR1.SPEC}'
+          description: 'Спец флаг для регистратора #1'
         - macro: '{$DVR2.HTTP}'
           value: '88'
           description: 'HTTP порт регистратора #2'
@@ -760,6 +825,8 @@ zabbix_export:
         - macro: '{$DVR2.SERVICE}'
           value: '554'
           description: 'SERVICE порт регистратора #2'
+        - macro: '{$DVR2.SPEC}'
+          description: 'Спец флаг для регистратора #2'
         - macro: '{$HOTSPOT1.HTTP}'
           value: '0'
           description: 'HTTP порт точки доступа #1'
@@ -769,6 +836,19 @@ zabbix_export:
         - macro: '{$HOTSPOT1.MAC}'
           value: '00:00:00:00:00:00'
           description: 'MAC адрес точки доступа #1'
+        - macro: '{$HOTSPOT1.SPEC}'
+          description: 'Спец флаг для точки доступа #1'
+        - macro: '{$HOTSPOT2.HTTP}'
+          value: '0'
+          description: 'HTTP порт точки доступа #2'
+        - macro: '{$HOTSPOT2.IP}'
+          value: 0.0.0.0
+          description: 'IP адрес точки доступа #2'
+        - macro: '{$HOTSPOT2.MAC}'
+          value: '00:00:00:00:00:00'
+          description: 'MAC адрес точки доступа #2'
+        - macro: '{$HOTSPOT2.SPEC}'
+          description: 'Спец флаг для точки доступа #2'
         - macro: '{$KEEPER1.IP}'
           value: 0.0.0.0
           description: 'IP адрес кипера #1'
@@ -778,6 +858,8 @@ zabbix_export:
         - macro: '{$KEEPER1.SERVICE}'
           value: '50601'
           description: 'SERVICE порт кипера #1'
+        - macro: '{$KEEPER1.SPEC}'
+          description: 'Спец флаг для кипера #1'
         - macro: '{$KEEPER2.IP}'
           value: 0.0.0.0
           description: 'IP адрес кипера #2'
@@ -787,6 +869,8 @@ zabbix_export:
         - macro: '{$KEEPER2.SERVICE}'
           value: '50601'
           description: 'SERVICE порт кипера #2'
+        - macro: '{$KEEPER2.SPEC}'
+          description: 'Спец флаг для кипера #2'
         - macro: '{$KKT1.HTTP}'
           value: '0'
           description: 'HTTP порт кассы #1'
@@ -796,6 +880,8 @@ zabbix_export:
         - macro: '{$KKT1.MAC}'
           value: '00:00:00:00:00:00'
           description: 'MAC адрес кассы #1'
+        - macro: '{$KKT1.SPEC}'
+          description: 'Спец флаг для кассы #1'
         - macro: '{$KKT2.HTTP}'
           value: '0'
           description: 'HTTP порт кассы #2'
@@ -805,6 +891,8 @@ zabbix_export:
         - macro: '{$KKT2.MAC}'
           value: '00:00:00:00:00:00'
           description: 'MAC адрес кассы #2'
+        - macro: '{$KKT2.SPEC}'
+          description: 'Спец флаг для кассы #2'
         - macro: '{$ROUTER.BRAND}'
           value: KEENETIC
           description: 'Модель роутера'
@@ -818,6 +906,7 @@ zabbix_export:
           value: admin
           description: 'Логин роутера'
         - macro: '{$ROUTER.PASSWORD}'
+          value: 'stub'
           description: 'Пароль роутера'
         - macro: '{$ROUTER.PROTO}'
           value: SSH
@@ -834,6 +923,8 @@ zabbix_export:
         - macro: '{$TERMINAL1.MAC}'
           value: '00:00:00:00:00:00'
           description: 'MAC адрес терминала #1'
+        - macro: '{$TERMINAL1.SPEC}'
+          description: 'Спец флаг для терминала #1'
         - macro: '{$TERMINAL2.HTTP}'
           value: '0'
           description: 'HTTP порт терминала #2'
@@ -843,6 +934,8 @@ zabbix_export:
         - macro: '{$TERMINAL2.MAC}'
           value: '00:00:00:00:00:00'
           description: 'MAC адрес терминала #2'
+        - macro: '{$TERMINAL2.SPEC}'
+          description: 'Спец флаг для терминала #2'
       dashboards:
         - uuid: 7d60cb62abe444dc92683d52b71712e3
           name: 'Состояние объекта'
@@ -1383,6 +1476,44 @@ zabbix_export:
           value: '{$HOTSPOT1.IP}'
         - tag: MAC
           value: '{$HOTSPOT1.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: af9b1c2bcfbd48498d383951f8812042
+      expression: 'last(/RouterTemplate/router.survey.HOTSPOT2.code)=3 and last(/RouterTemplate/router.survey.code)=201'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.HOTSPOT2.code)<>3 and last(/RouterTemplate/router.survey.code)<>201'
+      name: 'Точка доступа #2 не на контроле'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$HOTSPOT2.IP}'
+        - tag: MAC
+          value: '{$HOTSPOT2.MAC}'
+        - tag: SOURCE
+          value: DEVICE
+    - uuid: 88faaf5632ca4aea95980057ecac3142
+      expression: 'last(/RouterTemplate/router.survey.HOTSPOT2.code)>=3 and last(/RouterTemplate/router.survey.code)=200'
+      recovery_mode: RECOVERY_EXPRESSION
+      recovery_expression: 'last(/RouterTemplate/router.survey.HOTSPOT2.code)<3 and last(/RouterTemplate/router.survey.code)=200'
+      name: 'Точка доступа #2 ошибка'
+      opdata: '{ITEM.LASTVALUE}'
+      url: 'http://{HOST.IP}:{$ROUTER.HTTP}'
+      priority: INFO
+      dependencies:
+        - name: 'Нет связи с объектом'
+          expression: last(/RouterTemplate/router.survey.code)=503
+          recovery_expression: last(/RouterTemplate/router.survey.code)<>503
+      tags:
+        - tag: IP
+          value: '{$HOTSPOT2.IP}'
+        - tag: MAC
+          value: '{$HOTSPOT2.MAC}'
         - tag: SOURCE
           value: DEVICE
   graphs:
