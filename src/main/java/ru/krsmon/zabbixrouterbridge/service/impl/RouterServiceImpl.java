@@ -1,24 +1,5 @@
 package ru.krsmon.zabbixrouterbridge.service.impl;
 
-import static java.lang.String.valueOf;
-import static java.util.stream.Collectors.toMap;
-import static ru.krsmon.zabbixrouterbridge.dto.DeviceStatus.Status.NAN;
-import static ru.krsmon.zabbixrouterbridge.dto.DeviceStatus.Status.OFFLINE;
-import static ru.krsmon.zabbixrouterbridge.dto.DeviceStatus.Status.ONLINE;
-import static ru.krsmon.zabbixrouterbridge.dto.RouterSurveyResponse.errorResult;
-import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.INTERNAL_EXCEPTION;
-import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.MACROS_LIP;
-import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.MACRO_ROUTER_ID;
-import static ru.krsmon.zabbixrouterbridge.utils.CheckUtils.fullCheck;
-import static ru.krsmon.zabbixrouterbridge.utils.CheckUtils.isShortScenery;
-import static ru.krsmon.zabbixrouterbridge.utils.CheckUtils.shortCheck;
-import static ru.krsmon.zabbixrouterbridge.utils.CheckUtils.validateResult;
-import static ru.krsmon.zabbixrouterbridge.utils.PortScanner.scanPorts;
-import static ru.krsmon.zabbixrouterbridge.utils.RegexUtils.toArpMap;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -26,16 +7,26 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import ru.krsmon.zabbixrouterbridge.clients.Client;
 import ru.krsmon.zabbixrouterbridge.domain.mapper.RouterMapper;
-import ru.krsmon.zabbixrouterbridge.dto.Brand;
-import ru.krsmon.zabbixrouterbridge.dto.DeviceDto;
-import ru.krsmon.zabbixrouterbridge.dto.DeviceStatus;
-import ru.krsmon.zabbixrouterbridge.dto.Protocol;
-import ru.krsmon.zabbixrouterbridge.dto.RouterSurveyRequest;
-import ru.krsmon.zabbixrouterbridge.dto.RouterSurveyResponse;
+import ru.krsmon.zabbixrouterbridge.dto.*;
 import ru.krsmon.zabbixrouterbridge.exception.BridgeException;
 import ru.krsmon.zabbixrouterbridge.external.zabbix.service.ZabbixService;
 import ru.krsmon.zabbixrouterbridge.service.RouterService;
 import ru.krsmon.zabbixrouterbridge.utils.CheckUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import static java.lang.String.valueOf;
+import static java.util.stream.Collectors.toMap;
+import static ru.krsmon.zabbixrouterbridge.dto.DeviceStatus.Status.*;
+import static ru.krsmon.zabbixrouterbridge.dto.RouterSurveyResponse.errorResult;
+import static ru.krsmon.zabbixrouterbridge.exception.BridgeError.INTERNAL_EXCEPTION;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.MACROS_LIP;
+import static ru.krsmon.zabbixrouterbridge.external.zabbix.model.ZabbixConstrains.MACRO_ROUTER_ID;
+import static ru.krsmon.zabbixrouterbridge.utils.CheckUtils.*;
+import static ru.krsmon.zabbixrouterbridge.utils.PortScanner.scanPorts;
+import static ru.krsmon.zabbixrouterbridge.utils.RegexUtils.toArpMap;
 
 @Slf4j
 @Service
@@ -95,9 +86,13 @@ public class RouterServiceImpl implements RouterService {
           arpMap.putAll(toArpMap(client.execute(brand.getArp())));
           resultMap.putAll(request.getDevices().stream()
               .filter(CheckUtils::isNonDefaultDevice)
-              .peek(device -> add2UpdateIfNeed(device, arpMap, macrosNeedUpdate))
               .peek(device -> device.setIp(arpMap.getOrDefault(device.getMac(), device.getIp())))
-              .map(device -> fullCheck(request.getIp(), device, brand.getPing(device.getIp()), client))
+              .map(device -> {
+                var result = fullCheck(request.getIp(), device, brand.getPing(device.getIp()), client);
+                if (ONLINE.getCode() == result.getValue().getCode())
+                  add2UpdateIfNeed(device, arpMap, macrosNeedUpdate);
+                return result;
+              })
               .collect(toMap(Entry::getKey, Entry::getValue)));
 
         } else {
